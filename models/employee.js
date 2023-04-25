@@ -1,3 +1,8 @@
+const crypto=require('crypto');
+const bcrypt=require('bcrypt');
+const {ReE,ReS,to}=require('../global_function');
+const jwt=require('jsonwebtoken');
+const cryptoService=require('../services/crypto.service.js');
 module.exports=(sequelize,Datatypes)=>{
     const Model=sequelize.define('employee',{
        id:{
@@ -23,9 +28,9 @@ module.exports=(sequelize,Datatypes)=>{
         underscored:false
 
     });
-    // Model.associate=function(models){
-    //     this.Timesheet=this.hasOne(models.Timesheet,{foreignKey:'employeeId'});
-    // }
+    Model.associate=function(models){
+        this.Timesheet=this.hasOne(models.Timesheet,{foreignKey:'employeeId'});
+    }
  
     Model.beforeSave(async(user,option)=>{
         let err;
@@ -43,5 +48,16 @@ module.exports=(sequelize,Datatypes)=>{
             user.password=hash;
         }
     });
+
+    Model.prototype.getJWT=async function(){
+        const token="Bearer "+jwt.sign({
+            id:this.id,
+            ename:this.ename
+        },CONFIG.jwt_encryption,{expiresIn:CONFIG.jwt_expiration});
+        let [err,encryptedToken]=await to(cryptoService.encrypt(token));
+        if(err) TE(err.message);
+        console.log(encryptedToken);
+        return encryptedToken;
+    }
     return Model;
 };

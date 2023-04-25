@@ -32,8 +32,8 @@ module.exports=(sequelize,Datatypes)=>{
         underscored:false
 
     });
-    // Model.associate=function(models){
-    //     this.employeeId=this.belongsTo(models.employee,{foreignKey:'employeeId'});
-    // }
+    Model.associate=function(models){
+        this.employeeId=this.belongsTo(models.employee,{foreignKey:'employeeId'});
+    }
     return Model;
 };

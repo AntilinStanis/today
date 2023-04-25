@@ -1,11 +1,14 @@
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
+const passport=require('passport');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const{to}=require('./global_function');
 
 var indexRouter = require('./routes/v1');
 // var usersRouter = require('./routes/users');
+var cryptoService=require('./services/crypto.service');
 
 var app = express();
 
@@ -19,6 +22,22 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 require('./config/config');
+
+app.use(passport.initialize());
+app.use(async function(req,res,next){
+  if(req && req.headers  && req.headers.authorization){
+   [err,req.headers.authorization] =await to(cryptoService.decrypt(req.headers.authorization));
+  }
+  res.setHeader('Access-Controls-Allow-Origin','*');
+
+  res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS,PUT,PATCH,DELETE');
+
+  res.setHeader('Access-Control-Allow-Headers','X-Request-With,content-type,Authorization,Content-Type');
+
+  res.setHeader('Access-Control-Allow-Credentials',true);
+
+  next();
+});
 
 
 const models=require('./models');
